@@ -97,8 +97,32 @@ const FormColeta: React.FC<FormColetaProps> = ({ tarefa, onConcluido }) => {
         return <div>Carregando formulário...</div>
     }
 
+    const idRomaneio = variables.idRomaneio
+    const idPedido = variables.idPedido
+
     return (
         <form onSubmit={handleSubmit} style={{ maxWidth: '600px' }}>
+            {(idRomaneio || idPedido) && (
+                <div style={{
+                    marginBottom: '20px',
+                    padding: '15px',
+                    backgroundColor: '#e3f2fd',
+                    borderLeft: '4px solid #0066cc',
+                    borderRadius: '4px'
+                }}>
+                    {idRomaneio && (
+                        <p style={{ margin: '5px 0' }}>
+                            <strong style={{ color: '#0066cc' }}>🚚 Romaneio:</strong> {idRomaneio}
+                        </p>
+                    )}
+                    {idPedido && (
+                        <p style={{ margin: '5px 0' }}>
+                            <strong style={{ color: '#0066cc' }}>📦 Pedido:</strong> {idPedido}
+                        </p>
+                    )}
+                </div>
+            )}
+
             <div style={{
                 padding: '15px',
                 backgroundColor: '#e3f2fd',

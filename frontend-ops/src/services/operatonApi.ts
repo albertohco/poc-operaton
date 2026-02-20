@@ -93,7 +93,7 @@ class OperatonApi {
             // Formata como esperado pelo Operaton: {"variavel": {"value": ..., "type": "String"}}
             const formattedVariables = Object.entries(variables).reduce((acc, [key, value]) => {
                 let varType = 'String'
-                if (typeof value === 'number') varType = 'Number'
+                if (typeof value === 'number') varType = 'Double'
                 else if (typeof value === 'boolean') varType = 'Boolean'
 
                 acc[key] = {

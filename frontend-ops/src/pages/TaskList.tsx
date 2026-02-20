@@ -10,11 +10,16 @@ interface TaskListProps {
     grupoLogado: string
 }
 
+interface TaskComVariaveis extends Task {
+    variaveisTarefa?: Record<string, any>
+}
+
 const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
-    const [tarefas, setTarefas] = useState<Task[]>([])
-    const [tarefaSelecionada, setTarefaSelecionada] = useState<Task | null>(null)
+    const [tarefas, setTarefas] = useState<TaskComVariaveis[]>([])
+    const [tarefaSelecionada, setTarefaSelecionada] = useState<TaskComVariaveis | null>(null)
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState<string | null>(null)
+    const [carregandoVariaveis, setCarregandoVariaveis] = useState(false)
 
     useEffect(() => {
         carregarTarefas()
@@ -37,7 +42,26 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
         }
     }
 
-    const renderFormulario = (tarefa: Task) => {
+    const carregarVariaveisTarefa = async (tarefa: TaskComVariaveis) => {
+        try {
+            setCarregandoVariaveis(true)
+            const variaveis = await operatonApi.getTaskVariables(tarefa.id)
+            const tarefaComVariaveis = {
+                ...tarefa,
+                variaveisTarefa: variaveis
+            }
+            setTarefaSelecionada(tarefaComVariaveis)
+            setErro(null)
+        } catch (err) {
+            console.error('Erro ao carregar variáveis da tarefa:', err)
+            setErro('Erro ao carregar dados da tarefa.')
+            setTarefaSelecionada(tarefa)
+        } finally {
+            setCarregandoVariaveis(false)
+        }
+    }
+
+    const renderFormulario = (tarefa: TaskComVariaveis) => {
         switch (tarefa.formKey) {
             case 'form_separacao':
                 return <FormSeparacao tarefa={tarefa} onConcluido={handleTarefaConcluida} />
@@ -89,30 +113,42 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
                 )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {tarefas.map(tarefa => (
-                        <div
-                            key={tarefa.id}
-                            onClick={() => setTarefaSelecionada(tarefa)}
-                            style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                backgroundColor: tarefaSelecionada?.id === tarefa.id ? '#e3f2fd' : '#fff',
-                                borderLeft: tarefaSelecionada?.id === tarefa.id ? '4px solid #0066cc' : '4px solid transparent'
-                            }}
-                        >
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                                {tarefa.name}
+                    {tarefas.map(tarefa => {
+                        const idRomaneio = tarefa.variaveisTarefa?.idRomaneio || tarefa.variables?.idRomaneio?.value
+                        const idPedido = tarefa.variaveisTarefa?.idPedido || tarefa.variables?.idPedido?.value
+
+                        return (
+                            <div
+                                key={tarefa.id}
+                                onClick={() => carregarVariaveisTarefa(tarefa)}
+                                style={{
+                                    padding: '12px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    backgroundColor: tarefaSelecionada?.id === tarefa.id ? '#e3f2fd' : '#fff',
+                                    borderLeft: tarefaSelecionada?.id === tarefa.id ? '4px solid #0066cc' : '4px solid transparent'
+                                }}
+                            >
+                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                                    {tarefa.name}
+                                </div>
+                                {(idRomaneio || idPedido) && (
+                                    <div style={{ fontSize: '11px', color: '#0066cc', marginBottom: '4px', fontWeight: '500' }}>
+                                        {idRomaneio && <span>🚚 ROM: {idRomaneio}</span>}
+                                        {idRomaneio && idPedido && <span> | </span>}
+                                        {idPedido && <span>📦 PED: {idPedido}</span>}
+                                    </div>
+                                )}
+                                <div style={{ fontSize: '11px', color: '#666' }}>
+                                    ID: {tarefa.id.substring(0, 8)}...
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#999' }}>
+                                    Tipo: {tarefa.formKey}
+                                </div>
                             </div>
-                            <div style={{ fontSize: '11px', color: '#666' }}>
-                                ID: {tarefa.id.substring(0, 8)}...
-                            </div>
-                            <div style={{ fontSize: '11px', color: '#999' }}>
-                                Tipo: {tarefa.formKey}
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </div>
 
@@ -126,10 +162,27 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
                 {tarefaSelecionada ? (
                     <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '4px' }}>
                         <h2>{tarefaSelecionada.name}</h2>
-                        <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '4px', border: '1px solid #e0e0e0' }}>
                             <p><strong>ID da Tarefa:</strong> {tarefaSelecionada.id}</p>
                             <p><strong>Tipo de Formulário:</strong> {tarefaSelecionada.formKey}</p>
                             <p><strong>Instância do Processo:</strong> {tarefaSelecionada.processInstanceId}</p>
+
+                            {carregandoVariaveis && <p style={{ color: '#666', fontStyle: 'italic' }}>Carregando dados da tarefa...</p>}
+
+                            {tarefaSelecionada.variaveisTarefa && (
+                                <>
+                                    {tarefaSelecionada.variaveisTarefa.idRomaneio && (
+                                        <p style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e0e0e0' }}>
+                                            <strong style={{ color: '#0066cc' }}>🚚 ID do Romaneio:</strong> <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{tarefaSelecionada.variaveisTarefa.idRomaneio}</span>
+                                        </p>
+                                    )}
+                                    {tarefaSelecionada.variaveisTarefa.idPedido && (
+                                        <p>
+                                            <strong style={{ color: '#0066cc' }}>📦 ID do Pedido:</strong> <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{tarefaSelecionada.variaveisTarefa.idPedido}</span>
+                                        </p>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         {renderFormulario(tarefaSelecionada)}
