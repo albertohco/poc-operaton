@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0qqrbzx" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.43.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:process id="processo_expedicao_v1" name="Processo de Expedição Inteligente" isExecutable="true" camunda:versionTag="1.0" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1" name="Iniciar Expedição">
+      <bpmn:outgoing>Flow_0f4sdke</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Separacao" name="Separar Pedido" camunda:formKey="form_separacao" camunda:candidateGroups="EXPEDICAO">
+      <bpmn:incoming>Flow_0f4sdke</bpmn:incoming>
+      <bpmn:incoming>Flow_1taggxr</bpmn:incoming>
+      <bpmn:outgoing>Flow_05uuult</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Aprovado" name="Peso Validado?" default="Flow_01aym7u">
+      <bpmn:incoming>Flow_1ctb2pq</bpmn:incoming>
+      <bpmn:outgoing>Flow_01aym7u</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0mx5lh0</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Correcao" name="Corrigir Divergência de Peso" camunda:formKey="form_correcao" camunda:candidateGroups="EXPEDICAO">
+      <bpmn:incoming>Flow_0mx5lh0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1taggxr</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Faturamento" name="Faturar Pedido" camunda:formKey="form_faturamento" camunda:candidateGroups="FINANCEIRO">
+      <bpmn:incoming>Flow_01aym7u</bpmn:incoming>
+      <bpmn:outgoing>Flow_0l1yxsm</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Coleta" name="Conferir e Coletar" camunda:formKey="form_coleta" camunda:candidateGroups="GATE">
+      <bpmn:incoming>Flow_0l1yxsm</bpmn:incoming>
+      <bpmn:outgoing>Flow_1d2mt9z</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0f4sdke" sourceRef="StartEvent_1" targetRef="Task_Separacao" />
+    <bpmn:sequenceFlow id="Flow_05uuult" sourceRef="Task_Separacao" targetRef="Task_Validar" />
+    <bpmn:sequenceFlow id="Flow_1ctb2pq" sourceRef="Task_Validar" targetRef="Gateway_Aprovado" />
+    <bpmn:sequenceFlow id="Flow_01aym7u" name="Aprovado" sourceRef="Gateway_Aprovado" targetRef="Task_Faturamento" />
+    <bpmn:sequenceFlow id="Flow_0mx5lh0" name="Reprovado" sourceRef="Gateway_Aprovado" targetRef="Task_Correcao">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${divergenciaPeso == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0l1yxsm" sourceRef="Task_Faturamento" targetRef="Task_Coleta" />
+    <bpmn:endEvent id="EndEvent_1" name="Terminar Expedição">
+      <bpmn:incoming>Flow_1d2mt9z</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1d2mt9z" sourceRef="Task_Coleta" targetRef="EndEvent_1" />
+    <bpmn:sequenceFlow id="Flow_1taggxr" sourceRef="Task_Correcao" targetRef="Task_Separacao" />
+    <bpmn:businessRuleTask id="Task_Validar" name="Validar Peso" camunda:resultVariable="divergenciaPeso" camunda:decisionRef="regras_decisao" camunda:decisionRefBinding="deployment" camunda:mapDecisionResult="singleEntry">
+      <bpmn:incoming>Flow_05uuult</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ctb2pq</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="processo_expedicao_v1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="222" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="78" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0bklclv_di" bpmnElement="Task_Separacao">
+        <dc:Bounds x="190" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1s4yv1j_di" bpmnElement="Gateway_Aprovado" isMarkerVisible="true">
+        <dc:Bounds x="215" y="435" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="128" y="453" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zqsq7e_di" bpmnElement="Task_Correcao">
+        <dc:Bounds x="320" y="320" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1cmoipm_di" bpmnElement="Task_Faturamento">
+        <dc:Bounds x="190" y="540" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0fnlqzz_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="222" y="772" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="215" y="815" width="52" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0oulock_di" bpmnElement="Task_Coleta">
+        <dc:Bounds x="190" y="650" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_01vanhn_di" bpmnElement="Task_Validar">
+        <dc:Bounds x="190" y="320" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0f4sdke_di" bpmnElement="Flow_0f4sdke">
+        <di:waypoint x="240" y="138" />
+        <di:waypoint x="240" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1taggxr_di" bpmnElement="Flow_1taggxr">
+        <di:waypoint x="370" y="320" />
+        <di:waypoint x="370" y="170" />
+        <di:waypoint x="240" y="170" />
+        <di:waypoint x="240" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05uuult_di" bpmnElement="Flow_05uuult">
+        <di:waypoint x="240" y="280" />
+        <di:waypoint x="240" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ctb2pq_di" bpmnElement="Flow_1ctb2pq">
+        <di:waypoint x="240" y="400" />
+        <di:waypoint x="240" y="435" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01aym7u_di" bpmnElement="Flow_01aym7u">
+        <di:waypoint x="240" y="485" />
+        <di:waypoint x="240" y="540" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="232" y="510" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mx5lh0_di" bpmnElement="Flow_0mx5lh0">
+        <di:waypoint x="265" y="460" />
+        <di:waypoint x="370" y="460" />
+        <di:waypoint x="370" y="400" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="291" y="442" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0l1yxsm_di" bpmnElement="Flow_0l1yxsm">
+        <di:waypoint x="240" y="620" />
+        <di:waypoint x="240" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1d2mt9z_di" bpmnElement="Flow_1d2mt9z">
+        <di:waypoint x="240" y="730" />
+        <di:waypoint x="240" y="772" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,96 @@
+networks:
+  operaton-net:
+    driver: bridge
+
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: operaton
+      POSTGRES_USER: camunda
+      POSTGRES_PASSWORD: camunda123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - operaton-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U camunda -d operaton"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  operaton-engine:
+    image: operaton/operaton:latest
+    container_name: operaton-engine
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      DB_DRIVER: org.postgresql.Driver
+      DB_URL: jdbc:postgresql://postgres-db:5432/operaton
+      DB_USERNAME: camunda
+      DB_PASSWORD: camunda123
+      DB_VALIDATE_ON_BORROW: "true"
+    ports:
+      - "8080:8080"
+    networks:
+      - operaton-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/engine-rest/engine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend-python:
+    build:
+      context: .
+      dockerfile: backend-python/Dockerfile
+    container_name: backend-python
+    depends_on:
+      operaton-engine:
+        condition: service_healthy
+    environment:
+      OPERATON_ENGINE_URL: http://operaton-engine:8080
+      DATABASE_URL: postgresql://camunda:camunda123@postgres-db:5432/operaton
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend-python:/app
+    networks:
+      - operaton-net
+    command: python main.py
+
+  frontend-ops:
+    build:
+      context: ./frontend-ops
+      dockerfile: Dockerfile
+    container_name: frontend-ops
+    depends_on:
+      - backend-python
+    ports:
+      - "3000:3000"
+    networks:
+      - operaton-net
+    environment:
+      VITE_OPERATON_URL: http://localhost:8080
+      VITE_BACKEND_URL: http://localhost:8000
+
+  frontend-protheus:
+    build:
+      context: ./frontend-protheus
+      dockerfile: Dockerfile
+    container_name: frontend-protheus
+    depends_on:
+      - backend-python
+    ports:
+      - "3001:3001"
+    networks:
+      - operaton-net
+    environment:
+      VITE_BACKEND_URL: http://localhost:8000
+
+volumes:
+  postgres_data:

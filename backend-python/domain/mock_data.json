@@ -1,0 +1,74 @@
+{
+  "pedidos_ficticios": [
+    {
+      "idRomaneio": "ROM001",
+      "idPedido": "PED001",
+      "pesoTeorico": 500.0,
+      "qtdVolumes": 10,
+      "itens": [
+        {
+          "id": "ITEM001",
+          "descricao": "Produto A",
+          "quantidade": 100
+        }
+      ]
+    },
+    {
+      "idRomaneio": "ROM002",
+      "idPedido": "PED002",
+      "pesoTeorico": 750.5,
+      "qtdVolumes": 15,
+      "itens": [
+        {
+          "id": "ITEM002",
+          "descricao": "Produto B",
+          "quantidade": 50
+        },
+        {
+          "id": "ITEM003",
+          "descricao": "Produto C",
+          "quantidade": 75
+        }
+      ]
+    },
+    {
+      "idRomaneio": "ROM003",
+      "idPedido": "PED003",
+      "pesoTeorico": 1200.0,
+      "qtdVolumes": 24,
+      "itens": [
+        {
+          "id": "ITEM004",
+          "descricao": "Produto D",
+          "quantidade": 120
+        }
+      ]
+    },
+    {
+      "idRomaneio": "ROM004",
+      "idPedido": "PED004",
+      "pesoTeorico": 300.75,
+      "qtdVolumes": 6,
+      "itens": [
+        {
+          "id": "ITEM005",
+          "descricao": "Produto E",
+          "quantidade": 30
+        }
+      ]
+    },
+    {
+      "idRomaneio": "ROM005",
+      "idPedido": "PED005",
+      "pesoTeorico": 950.0,
+      "qtdVolumes": 19,
+      "itens": [
+        {
+          "id": "ITEM006",
+          "descricao": "Produto F",
+          "quantidade": 95
+        }
+      ]
+    }
+  ]
+}
