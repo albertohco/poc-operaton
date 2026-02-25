@@ -4,6 +4,7 @@ import FormSeparacao from '../components/DynamicForms/FormSeparacao'
 import FormFaturamento from '../components/DynamicForms/FormFaturamento'
 import FormColeta from '../components/DynamicForms/FormColeta'
 import FormCorrecao from '../components/DynamicForms/FormCorrecao'
+import RomaneioCard from '../components/RomaneioCard'
 
 interface TaskListProps {
     usuarioLogado: string
@@ -84,7 +85,9 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
     return (
         <div style={{ display: 'flex', height: 'calc(100vh - 60px)' }}>
             {/* Sidebar com lista de tarefas */}
-            <div style={{
+            <div
+                className="scrollable-sidebar"
+                style={{
                 width: '400px',
                 borderRight: '1px solid #ddd',
                 overflowY: 'auto',
@@ -116,6 +119,9 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
                     {tarefas.map(tarefa => {
                         const idRomaneio = tarefa.variaveisTarefa?.idRomaneio || tarefa.variables?.idRomaneio?.value
                         const idPedido = tarefa.variaveisTarefa?.idPedido || tarefa.variables?.idPedido?.value
+                        const itens = tarefa.variaveisTarefa?.itens || tarefa.variables?.itens?.value || []
+                        const pesoTeorico = tarefa.variaveisTarefa?.pesoTeorico || tarefa.variables?.pesoTeorico?.value
+                        const qtdVolumes = tarefa.variaveisTarefa?.qtdVolumes || tarefa.variables?.qtdVolumes?.value
 
                         return (
                             <div
@@ -127,7 +133,8 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
                                     borderRadius: '4px',
                                     cursor: 'pointer',
                                     backgroundColor: tarefaSelecionada?.id === tarefa.id ? '#e3f2fd' : '#fff',
-                                    borderLeft: tarefaSelecionada?.id === tarefa.id ? '4px solid #0066cc' : '4px solid transparent'
+                                    borderLeft: tarefaSelecionada?.id === tarefa.id ? '4px solid #0066cc' : '4px solid transparent',
+                                    transition: 'all 0.2s ease'
                                 }}
                             >
                                 <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
@@ -139,6 +146,18 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
                                         {idRomaneio && idPedido && <span> | </span>}
                                         {idPedido && <span>📦 PED: {idPedido}</span>}
                                     </div>
+                                )}
+                                {(itens.length > 0 || pesoTeorico || qtdVolumes) && (
+                                    <RomaneioCard
+                                        dados={{
+                                            idRomaneio,
+                                            idPedido,
+                                            pesoTeorico,
+                                            qtdVolumes,
+                                            itens
+                                        }}
+                                        compact={true}
+                                    />
                                 )}
                                 <div style={{ fontSize: '11px', color: '#666' }}>
                                     ID: {tarefa.id.substring(0, 8)}...
@@ -153,7 +172,9 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
             </div>
 
             {/* Main content com detalhes da tarefa */}
-            <div style={{
+            <div
+                className="scrollable-panel"
+                style={{
                 flex: 1,
                 padding: '20px',
                 overflowY: 'auto',
@@ -168,23 +189,14 @@ const TaskList: React.FC<TaskListProps> = ({ usuarioLogado, grupoLogado }) => {
                             <p><strong>Instância do Processo:</strong> {tarefaSelecionada.processInstanceId}</p>
 
                             {carregandoVariaveis && <p style={{ color: '#666', fontStyle: 'italic' }}>Carregando dados da tarefa...</p>}
-
-                            {tarefaSelecionada.variaveisTarefa && (
-                                <>
-                                    {tarefaSelecionada.variaveisTarefa.idRomaneio && (
-                                        <p style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e0e0e0' }}>
-                                            <strong style={{ color: '#0066cc' }}>🚚 ID do Romaneio:</strong> <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{tarefaSelecionada.variaveisTarefa.idRomaneio}</span>
-                                        </p>
-                                    )}
-                                    {tarefaSelecionada.variaveisTarefa.idPedido && (
-                                        <p>
-                                            <strong style={{ color: '#0066cc' }}>📦 ID do Pedido:</strong> <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{tarefaSelecionada.variaveisTarefa.idPedido}</span>
-                                        </p>
-                                    )}
-                                </>
-                            )}
                         </div>
 
+                        {/* Exibe o card completo de Romaneio */}
+                        {tarefaSelecionada.variaveisTarefa && (
+                            <RomaneioCard dados={tarefaSelecionada.variaveisTarefa} />
+                        )}
+
+                        {/* Renderiza o formulário dinâmico da tarefa */}
                         {renderFormulario(tarefaSelecionada)}
                     </div>
                 ) : (

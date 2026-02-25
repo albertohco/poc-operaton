@@ -42,7 +42,16 @@ const Dashboard: React.FC = () => {
     }
 
     return (
-        <div style={{ padding: '20px' }}>
+        <div
+            className="scrollable-dashboard"
+            style={{
+                padding: '20px',
+                height: 'calc(100vh - 60px)',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column'
+            }}
+        >
             <div style={{ marginBottom: '20px' }}>
                 <h1>Dashboard de Produtividade - Expedição</h1>
                 <button

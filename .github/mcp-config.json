@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@xp/playwright-mcp"]
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "postgresql://camunda:camunda123@localhost:5432/operaton"
+      }
+    },
+    "docker": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-docker"]
+    }
+  }
+}
